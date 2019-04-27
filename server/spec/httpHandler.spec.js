@@ -47,12 +47,21 @@ describe('server responses', () => {
     });
   });
 
-  xit('should respond with 200 to a GET request for a present background image', (done) => {
+  it('should respond with 200 to a GET request for a present background image', (done) => {
+    httpHandler.backgroundImageFile = path.join('.', 'background.jpg');
+    let {req, res} = server.mock('http://127.0.0.1:8080', 'GET');
+
+    httpHandler.router(req, res, () => {
+
+      expect(res._responseCode).to.equal(200);
+      expect(res._ended).to.equal(true);
+      done();
+    });
     // write your test here
     done();
   });
 
-  xit('should respond to a POST request to save a background image', (done) => {
+  it('should respond to a POST request to save a background image', (done) => {
     // write your test here
     done();
   });

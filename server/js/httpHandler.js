@@ -11,6 +11,7 @@ module.exports.randomMove=()=>{
   return arr[Math.floor(Math.random()*arr.length)];
 };
 
+
 module.exports.router = (req, res, next = ()=>{}) => {
   console.log('Serving request type ' + req.method + ' for url ' + req.url);
   // res.writeHead(200, headers);
@@ -30,27 +31,33 @@ module.exports.router = (req, res, next = ()=>{}) => {
   const File=path.join('.', 'background.jpg');
   if(req.method==='GET'){
 
-  fs.exists(File,function(exists){
-    console.log(exists?true:false)
-    console.log(File);
+  fs.exists(File,function(){
+    var exists=module.exports.backgroundImageFile===File?true:false;
     if(exists){
       res.writeHead(200,{
         'Content-type': 'image'
       })
-      res.end(module.exports.randomMove())
+
     }else{
       res.writeHead(404, {"Content-Type": "text/plain"});
       res.end("ERROR File does not exist");
 
     }
-    console.log(res._responseCode);
+
     next();
     })
+    //module.exports.backgroundImageFile = path.join('.', 'background.jpg');
 
+    if(req.method==='POST'){
+      res.write(formData);
+      //save the file in directory
+      //if we get request post
+      //not sure how to make them send back
+    }
 
     res.writeHead(200, headers);//404 200
+    res.end();
 
-
-    res.end(module.exports.randomMove())//end is the
+    // res.end(module.exports.randomMove())//end is the
   };
 };
