@@ -2,62 +2,69 @@ const fs = require('fs');
 const path = require('path');
 const headers = require('./cors');
 const multipart = require('./multipartUtils');
-const messagesQueue = require('./messageQueue');
+
 // Path for the background image ///////////////////////
 module.exports.backgroundImageFile = path.join('.', 'background.jpg');
 ////////////////////////////////////////////////////////
-module.exports.randomMove=()=>{
-  var arr=['left', 'right', 'up', 'down'];
-  return arr[Math.floor(Math.random()*arr.length)];
+
+
+let messageQueue = null;
+module.exports.initialize = (queue) => {
+  messageQueue = queue;
 };
 
-
 module.exports.router = (req, res, next = ()=>{}) => {
-  console.log('Serving request type ' + req.method + ' for url ' + req.url);
-  // res.writeHead(200, headers);
-  if(req.method==="OPTIONS"){
+  //console.log('Serving request type ' + req.method + ' for url ' + req.url);
+
+  if (req.method === 'OPTIONS') {
     res.writeHead(200, headers);
     res.end();
-  };
+  }
 
-
-  // if(req.method==='GET'&&module.exports.backgroundImageFile===path.join('.', 'spec', 'missing.jpg')){
-  //   res.writeHead(404, headers);
-  //   return res.end();
-  // };
-
-
-
-  const File=path.join('.', 'background.jpg');
-  if(req.method==='GET'){
-
-  fs.exists(File,function(){
-    var exists=module.exports.backgroundImageFile===File?true:false;
-    if(exists){
-      res.writeHead(200,{
-        'Content-type': 'image'
-      })
-
-    }else{
-      res.writeHead(404, {"Content-Type": "text/plain"});
-      res.end("ERROR File does not exist");
-
+  if (req.method === 'GET') {
+    if (req.url === '/') {
+      res.writeHead(200, headers);
+      var command = messageQueue.dequeue();
+      if (command) {
+        console.log('Responding with:', command);
+        res.end(command);
+      } else {
+        res.end();
+      }
     }
 
-    next();
-    })
-    //module.exports.backgroundImageFile = path.join('.', 'background.jpg');
-
-    if(req.method==='POST'){
-      res.write(formData);
-      //save the file in directory
-      //if we get request post
-      //not sure how to make them send back
+    if (req.url === '/background.jpg') {
+      fs.readFile(module.exports.backgroundImageFile, (err, fileData) => {
+        if (err) {
+          res.writeHead(404);
+        } else {
+          res.writeHead(200, {
+            'Content-Type': 'image/jepg',
+            'Content-Length': fileData.length
+          });
+          res.write(fileData, 'binary');
+        }
+        res.end();
+        next();
+      });
     }
+  }
 
-    res.writeHead(200, headers);//404 200
-    res.end();
+  if (req.method === 'POST' && req.url === '/background.jpg') {
+    var imageData = Buffer.alloc(0);
 
-    // res.end(module.exports.randomMove())//end is the
-  };
+    req.on('data', (chunk) => {
+      imageData = Buffer.concat([imageData, chunk]);
+    });
+
+    req.on('end', () => {
+      var file = multipart.getFile(imageData);
+      fs.writeFile(module.exports.backgroundImageFile, file.data, (err) => {
+        res.writeHead(err ? 400 : 201, headers);
+        res.end();
+        next();
+      });
+    });
+  }
+
 };
