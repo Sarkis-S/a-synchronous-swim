@@ -16,21 +16,41 @@ module.exports.router = (req, res, next = ()=>{}) => {
   // res.writeHead(200, headers);
   if(req.method==="OPTIONS"){
     res.writeHead(200, headers);
-    return res.end();
+    res.end();
   };
-  // if(req.method==='GET'&&dataType==='image'){
-
-  // }
 
 
+  // if(req.method==='GET'&&module.exports.backgroundImageFile===path.join('.', 'spec', 'missing.jpg')){
+  //   res.writeHead(404, headers);
+  //   return res.end();
+  // };
+
+
+
+  const File=path.join('.', 'background.jpg');
   if(req.method==='GET'){
 
-    console.log(req);
-    console.log(res);
+  fs.exists(File,function(exists){
+    console.log(exists?true:false)
+    console.log(File);
+    if(exists){
+      res.writeHead(200,{
+        'Content-type': 'image'
+      })
+      res.end(module.exports.randomMove())
+    }else{
+      res.writeHead(404, {"Content-Type": "text/plain"});
+      res.end("ERROR File does not exist");
+
+    }
+    console.log(res._responseCode);
+    next();
+    })
+
 
     res.writeHead(200, headers);//404 200
 
 
-    return res.end(module.exports.randomMove())//end is the
+    res.end(module.exports.randomMove())//end is the
   };
 };
