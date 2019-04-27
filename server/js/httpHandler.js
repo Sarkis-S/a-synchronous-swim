@@ -22,13 +22,15 @@ module.exports.router = (req, res, next = ()=>{}) => {
 
   // }
 
+
   if(req.method==='GET'){
 
+    console.log(req);
+    console.log(res);
+
+    res.writeHead(200, headers);//404 200
 
 
-    res.writeHead(200, headers);
-
-
-    return res.end(module.exports.randomMove())
+    return res.end(module.exports.randomMove())//end is the
   };
 };
